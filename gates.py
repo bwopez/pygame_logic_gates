@@ -1,8 +1,12 @@
 import pygame
 
 
-# TODO: make a XOR (A, B, -> A XOR B)
-# TODO: make a XNOR (A, B -> NOT A XOR B)
+# TODO: make a "snap" connecting box
+    # so when something comes in contact with it then it will "snap" 
+    # and be connected to it
+    # when something is connected to it then that will be
+    # the input for that gate, whether it be input1 or input2
+# TODO: create art for each gate
 class Gate(pygame.sprite.Sprite):
     def __init__(self, img_url="heart.png", x=0, y=0, gate_input1=0, gate_input2=0):
         super().__init__()
@@ -22,26 +26,35 @@ class Gate(pygame.sprite.Sprite):
         # gate input 1 or 2
         if gate_input_to_set == 1:
             self.gate_input1 = new_gate_input
+            # self.gate_input1.value = new_gate_input 
         if gate_input_to_set == 2:
             self.gate_input2 = new_gate_input
+            # self.gate_input2.value = new_gate_input
 
     def flip_input(self, gate_input):
         return not gate_input
+        # return not gate_input.value
+
+    def flip_input1(self):
+        self.set_input(self.flip_input(self.gate_input1), 1)
+        # self.set_input(self.flip_input(self.gate_input1.value), 1)
+
+    def flip_input2(self):
+        self.set_input(self.flip_input(self.gate_input2), 2)
+        # self.set_input(self.flip_input(self.gate_input2.value), 2)
 
 
 class Buffer_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1):
         super().__init__(img_url, x, y, gate_input1)
-        # self.gate_input1 = gate_input1
 
     def get_output(self):
         return self.gate_input1
 
 
-class Inverted_Buffer(Gate):
+class Inverted_Buffer_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1):
         super().__init__(img_url, x, y, gate_input1)
-        # self.gate_input1 = gate_input1
 
     def get_output(self):
         return self.flip_input(self.gate_input1)
@@ -50,8 +63,6 @@ class Inverted_Buffer(Gate):
 class AND_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1, gate_input2):
         super().__init__(img_url, x, y, gate_input1, gate_input2)
-        # self.gate_input1 = gate_input1
-        # self.gate_input2 = gate_input2
     
     def get_output(self):
         if not self.gate_input1:
@@ -67,15 +78,11 @@ class AND_Gate(Gate):
 class NAND_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1, gate_input2):
         super().__init__(img_url, x, y, gate_input1, gate_input2)
-        # self.gate_input1 = gate_input1
-        # self.gate_input2 = gate_input2
 
     def get_output(self):
-        # temp_AND_Gate = AND_Gate(self.gate_input1, self.gate_input2, self.img_url, self.rect.x, self.rect.y)
         temp_AND_Gate = AND_Gate(self.img_url, self.rect.x, self.rect.y, self.gate_input1, self.gate_input2)
         AND_output = temp_AND_Gate.get_output()
-        # temp_Inv_Buff = Inverted_Buffer(AND_output, self.img_url, self.rect.x, self.rect.y)
-        temp_Inv_Buff = Inverted_Buffer(self.img_url, self.rect.x, self.rect.y, AND_output)
+        temp_Inv_Buff = Inverted_Buffer_Gate(self.img_url, self.rect.x, self.rect.y, AND_output)
         temp_Inv_Buff_output = temp_Inv_Buff.get_output()
 
         return temp_Inv_Buff_output
@@ -86,8 +93,6 @@ class NAND_Gate(Gate):
 class OR_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1, gate_input2):
         super().__init__(img_url, x, y, gate_input1, gate_input2)
-        # self.gate_input1 = gate_input1
-        # self.gate_input2 = gate_input2
 
     def get_output(self):
         if self.gate_input1 == False and self.gate_input2 == False:
@@ -101,17 +106,38 @@ class OR_Gate(Gate):
 class NOR_Gate(Gate):
     def __init__(self, img_url, x, y, gate_input1, gate_input2):
         super().__init__(img_url, x, y, gate_input1, gate_input2)
-        # self.gate_input1 = gate_input1
-        # self.gate_input2 = gate_input2
     
     def get_output(self):
-        # temp_OR_Gate = OR_Gate(self.gate_input1, self.gate_input2, self.img_url, self.rect.x, self.rect.y)
         temp_OR_Gate = OR_Gate(self.img_url, self.rect.x, self.rect.y, self.gate_input1, self.gate_input2)
         temp_OR_Gate_output = temp_OR_Gate.get_output()
-        # temp_Inv_Buff = Inverted_Buffer(self.gate_input1, self.img_url, self.rect.x, self.rect.y)
-        temp_Inv_Buff = Inverted_Buffer(self.img_url, self.rect.x, self.rect.y, temp_OR_Gate_output)
+        temp_Inv_Buff = Inverted_Buffer_Gate(self.img_url, self.rect.x, self.rect.y, temp_OR_Gate_output)
         temp_Inv_Buff_output = temp_Inv_Buff.get_output()
 
         return temp_Inv_Buff_output
         # alternatively
         # return not (self.gate_input 1 or self.gate_input2)
+
+
+# XOR Gate
+# if both are the same = False
+class XOR_Gate(Gate):
+    def __init__(self, img_url, x, y, gate_input1, gate_input2):
+        super().__init__(img_url, x, y, gate_input1, gate_input2)
+
+    def get_output(self):
+        if self.gate_input1 == self.gate_input2:
+            return False
+        return True
+
+
+class XNOR_Gate(Gate):
+    def __init__(self, img_url, x, y, gate_input1, gate_input2):
+        super().__init__(img_url, x, y, gate_input1, gate_input2)
+
+    def get_output(self):
+        temp_XOR_Gate = XOR_Gate(self.img_url, self.rect.x, self.rect.y, self.gate_input1, self.gate_input2)
+        temp_XOR_Gate_output = temp_XOR_Gate.get_output()
+        temp_Inv_Buff = Inverted_Buffer_Gate(self.img_url, self.rect.x, self.rect.y, temp_XOR_Gate_output)
+        temp_Inv_Buff_output = temp_Inv_Buff.get_output()
+
+        return temp_Inv_Buff_output
