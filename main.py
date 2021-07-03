@@ -66,30 +66,14 @@ def main_game():
                 if event.key == K_RIGHT:
                     current_gate.flip_input2()
 
-                # if event.key == K_SPACE:
-                #     connected_index = player.rect.collidelist(connectables) 
-                #     if connected_index != -1:
-                #         player_connected = True
-                #     else:
-                #         # TODO: fix how the inputs interact with the gates themselves
-                #             # If you pick up False and connect it to the gate then it will
-                #             # work fine and then when you click again anywhere on the sccreen
-                #             # then the True will snap into place. NOT GOOD
-                #         if player_connected:
-                #             player_connected = False
-                #             # TODO: add TWO connectors on the left side of each gate
-                #                 # append each of the connectors to a new gate_connectors variable
-                #                 # that we will make and use
-                #             # curr_conn_gate = connectables[connected_index].rect.collidelist(gates)
-                #             curr_conn_gate = player.rect.collidelist(gates)
-                #             if curr_conn_gate != -1:
-                #                 gates[curr_conn_gate].input1_connected = True
-                #             else:
-                #                 gates[curr_conn_gate].input1_connected = False
                 # TODO: it is still a problem that if you try to put True on the gate first
                     # that it'll just throw both True and False on the gate input
                 if event.key == K_SPACE:
                     current_connected_input = player.rect.collidelist(connectables)
+                    # TODO: I think its not disconnecting because it is checking here if there
+                        # if connectables[current_connected_input].connected_to exists
+                        # that means if connectables[current_connected_input].connected_to != 0
+                        # I think it is set to 0 somewhere that isn't here
                     if current_connected_input != -1:
                         if connectables[current_connected_input].connected_to:
                             connectables[current_connected_input].connected_to.gate_input1 = 0
@@ -99,10 +83,14 @@ def main_game():
                         if player_connected:
                             current_connected_gate = player.rect.collidelist(gates)
                             if current_connected_gate != -1:
-                                gates[current_connected_gate].gate_input1 = connectables[current_connected_input]
-                                connectables[current_connected_input].connected_to = gates[current_connected_gate]
-                        # TODO: make a variable in the gate_input constructor that connects to a gate
-                            # so that it will have something to check and hold on to
+                                # gates[current_connected_gate].gate_input1 = connectables[current_connected_input]
+                                # connectables[current_connected_input].connected_to = gates[current_connected_gate]
+                                current_connected_gate_input = player.rect.collidelist(gates[current_connected_gate].list_of_inputs)
+                                if current_connected_gate_input != -1:
+                                    print("current_connected_gate_input", current_connected_gate_input)
+                                    gates[current_connected_gate].list_of_inputs[current_connected_gate_input] = connectables[current_connected_input]
+                                    connectables[current_connected_input].connected_to = gates[current_connected_gate]
+ 
                         player_connected = False
 
         if keys[K_ESCAPE]:
@@ -141,8 +129,6 @@ def main_game():
         # xnor_gate.draw(win, scroll)
         inverted_buffer_gate.draw(win, scroll)
         player.draw(win, scroll)
-
-        print(inverted_buffer_gate.get_output())
         
         clock.tick(60)
         pygame.display.update()

@@ -8,7 +8,7 @@ import pygame
     # the input for that gate, whether it be input1 or input2
 # TODO: create art for each gate
 class Gate(pygame.sprite.Sprite):
-    def __init__(self, img_url="heart.png", x=0, y=0, gate_input1=0, gate_input2=0, input1_connected=False, input2_connected=False):
+    def __init__(self, img_url="heart.png", x=0, y=0, gate_input1=0, gate_input2=0):
         super().__init__()
         self.img_url = img_url 
         self.image = pygame.image.load(self.img_url)
@@ -19,14 +19,28 @@ class Gate(pygame.sprite.Sprite):
         self.gate_input1 = gate_input1
         self.gate_input2 = gate_input2
 
-        # self.input1_connected = input1_connected
-        # self.input2_connected = input2_connected
+        # TODO: change this to only one input_connector
+        # TODO: make a two pronged input gate for all the other gates
+        input_connector_width = 10
+        input_connector_height = 10
+        self.list_of_inputs = []
+        self.input_connector1 = pygame.Rect(self.rect.left - input_connector_width, self.rect.top - input_connector_height, input_connector_width, input_connector_height)
+        self.input_connector2 = pygame.Rect(self.rect.left - input_connector_width, self.rect.bottom + input_connector_height, input_connector_width, input_connector_height)
+        self.list_of_inputs.append(self.input_connector1)
+        self.list_of_inputs.append(self.input_connector2)
 
     def draw(self, win, scroll_values):
         self.rect.x -= scroll_values[0]
         self.rect.y -= scroll_values[1]
 
         win.blit(self.image, (self.rect.x, self.rect.y))
+        self.input_connector1.right = self.rect.left
+        self.input_connector1.bottom = self.rect.top
+        pygame.draw.rect(win, "Green", self.input_connector1)
+
+        self.input_connector2.right = self.rect.left
+        self.input_connector2.top = self.rect.bottom
+        pygame.draw.rect(win, "Green", self.input_connector2)
 
     def set_input(self, new_gate_input, gate_input_to_set):
         # gate input 1 or 2
