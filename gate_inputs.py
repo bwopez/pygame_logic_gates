@@ -14,6 +14,8 @@ class Gate_Input(pygame.sprite.Sprite):
         output_connector_width = 10
         output_connector_height = 10
         self.output_connector = pygame.Rect(self.rect.right, self.rect.centery - output_connector_height / 2, output_connector_width, output_connector_height)
+
+        self.connected_to = 0
     
     def draw(self, win, scroll_values):
         # editing self.rect

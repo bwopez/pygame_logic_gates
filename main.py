@@ -10,10 +10,6 @@ from gate_inputs import Gate_Input
 from player import Player
 
 # TODO: make some graphics for the gates
-# TODO: make some graphics for the inputs
-# TODO: create small boxes at the ends of the gate's 
-    # and the ends of the inputs so that they can "snap" to 
-    # each other when they come in contact with each other
 # TODO: create a camera so that everything can be 
     # blitted onto that and screen shake can be applied to it
     # easier
@@ -21,31 +17,20 @@ def main_game():
     # window creation =========================
     pygame.init()
     clock = pygame.time.Clock()
-
     win = pygame.display.set_mode((600, 600))
     pygame.display.set_caption("circuit gates")
 
     # list of things that you can drag with your player
     connectables = []
 
+    # we know all the gates work
     gates = []
     current_element = 0
-    buffer_gate = Buffer_Gate("heart.png", 0, 0, True)
-    gates.append(buffer_gate)
-    inverted_buffer_gate = Inverted_Buffer_Gate("heart.png", 0, 0, True)
+    # xnor_gate = XNOR_Gate("heart.png", 200, 200, True, True)
+    # xnor_gate = XNOR_Gate("heart.png", 200, 200)
+    # gates.append(xnor_gate)
+    inverted_buffer_gate = Inverted_Buffer_Gate("heart.png", 200, 200)
     gates.append(inverted_buffer_gate)
-    and_gate = AND_Gate("heart.png", 0, 0, True, True)
-    gates.append(and_gate)
-    nand_gate = NAND_Gate("heart.png", 0, 0, True, True)
-    gates.append(nand_gate)
-    or_gate = OR_Gate("heart.png", 0, 0, True, True)
-    gates.append(or_gate)
-    nor_gate = NOR_Gate("heart.png", 0, 0, True, True)
-    gates.append(nor_gate)
-    xor_gate = XOR_Gate("heart.png", 0, 0, True, True)
-    gates.append(xor_gate)
-    xnor_gate = XNOR_Gate("heart.png", 0, 0, True, True)
-    gates.append(xnor_gate)
 
     new_input = Gate_Input("true.png", 0, 0, True)
     connectables.append(new_input)
@@ -62,6 +47,7 @@ def main_game():
     while running:
         current_gate = gates[current_element]
 
+        # dafluffypotato code
         # to keep the player in the middle of the screen
         scroll[0] += player.rect.centerx - scroll[0] - ((win.get_width() / 2) + (player.rect.width / 2))
         scroll[1] += player.rect.centery - scroll[1] - ((win.get_height() / 2) + (player.rect.height / 2))
@@ -79,24 +65,45 @@ def main_game():
                     current_gate.flip_input1()
                 if event.key == K_RIGHT:
                     current_gate.flip_input2()
-                # if event.key == K_SPACE:
-                #     current_element += 1
-                #     if current_element > len(gates) - 1:
-                #         current_element = 0
-                # print(current_element, current_gate.gate_input1, current_gate.gate_input2, current_gate.get_output())
-                if event.key == K_SPACE:
-                    connected_index = player.rect.collidelist(connectables) 
-                    if connected_index != -1:
-                        print(connected_index)
-                        player_connected = True
-                        print(player_connected)
-                    else:
-                        player_connected = False
-                        print(player_connected)
 
-            # if new_input.rect.left <= mouse_x <= new_input.rect.right and new_input.rect.top <= mouse_y <= new_input.rect.bottom:
-            #     if event.type == pygame.MOUSEBUTTONDOWN:
-            #         new_input.rect.center = mouse_x, mouse_y
+                # if event.key == K_SPACE:
+                #     connected_index = player.rect.collidelist(connectables) 
+                #     if connected_index != -1:
+                #         player_connected = True
+                #     else:
+                #         # TODO: fix how the inputs interact with the gates themselves
+                #             # If you pick up False and connect it to the gate then it will
+                #             # work fine and then when you click again anywhere on the sccreen
+                #             # then the True will snap into place. NOT GOOD
+                #         if player_connected:
+                #             player_connected = False
+                #             # TODO: add TWO connectors on the left side of each gate
+                #                 # append each of the connectors to a new gate_connectors variable
+                #                 # that we will make and use
+                #             # curr_conn_gate = connectables[connected_index].rect.collidelist(gates)
+                #             curr_conn_gate = player.rect.collidelist(gates)
+                #             if curr_conn_gate != -1:
+                #                 gates[curr_conn_gate].input1_connected = True
+                #             else:
+                #                 gates[curr_conn_gate].input1_connected = False
+                # TODO: it is still a problem that if you try to put True on the gate first
+                    # that it'll just throw both True and False on the gate input
+                if event.key == K_SPACE:
+                    current_connected_input = player.rect.collidelist(connectables)
+                    if current_connected_input != -1:
+                        if connectables[current_connected_input].connected_to:
+                            connectables[current_connected_input].connected_to.gate_input1 = 0
+                            connectables[current_connected_input].connected_to = 0
+                        player_connected = True
+                    else:
+                        if player_connected:
+                            current_connected_gate = player.rect.collidelist(gates)
+                            if current_connected_gate != -1:
+                                gates[current_connected_gate].gate_input1 = connectables[current_connected_input]
+                                connectables[current_connected_input].connected_to = gates[current_connected_gate]
+                        # TODO: make a variable in the gate_input constructor that connects to a gate
+                            # so that it will have something to check and hold on to
+                        player_connected = False
 
         if keys[K_ESCAPE]:
             running = False
@@ -112,16 +119,30 @@ def main_game():
         # Update window =======================
         win.fill("White")
 
-        # new_input.draw(win, scroll[0], scroll[1])
-        # new_input2.draw(win, scroll[0], scroll[1])
-        # player.draw(win, scroll[0], scroll[1])
-        # TODO: if the player is connected to something
-            # move the thing but with the player's input
+        # TODO: fix how gate inputs are being connected to the gates
+            # when you connect one it's fine but when you click again
+            # the next input will automatically snap to the gate itself
+        # if player_connected:
+        #     connectables[connected_index].rect.midright = player.rect.midleft
         if player_connected:
-            connectables[connected_index].rect.midright = player.rect.midleft
+            connectables[current_connected_input].rect.midright = player.rect.midleft
+        # for gate in gates:
+        #     if gate.input1_connected and not player_connected:
+        #         connectables[connected_index].rect.midright = gates[curr_conn_gate].rect.midleft
+        #     if gate.input2_connected and not player_connected:
+        #         connectables[connected_index].rect.bottomright = gates[curr_conn_gate].rect.topleft
+        for gate in gates:
+            if gate.gate_input1:
+                gate.gate_input1.rect.midright = gate.rect.midleft
+
+        # dafluffypotato code
         new_input.draw(win, scroll)
         new_input2.draw(win, scroll)
+        # xnor_gate.draw(win, scroll)
+        inverted_buffer_gate.draw(win, scroll)
         player.draw(win, scroll)
+
+        print(inverted_buffer_gate.get_output())
         
         clock.tick(60)
         pygame.display.update()

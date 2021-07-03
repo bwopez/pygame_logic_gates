@@ -8,7 +8,7 @@ import pygame
     # the input for that gate, whether it be input1 or input2
 # TODO: create art for each gate
 class Gate(pygame.sprite.Sprite):
-    def __init__(self, img_url="heart.png", x=0, y=0, gate_input1=0, gate_input2=0):
+    def __init__(self, img_url="heart.png", x=0, y=0, gate_input1=0, gate_input2=0, input1_connected=False, input2_connected=False):
         super().__init__()
         self.img_url = img_url 
         self.image = pygame.image.load(self.img_url)
@@ -19,7 +19,13 @@ class Gate(pygame.sprite.Sprite):
         self.gate_input1 = gate_input1
         self.gate_input2 = gate_input2
 
-    def draw(self, win):
+        # self.input1_connected = input1_connected
+        # self.input2_connected = input2_connected
+
+    def draw(self, win, scroll_values):
+        self.rect.x -= scroll_values[0]
+        self.rect.y -= scroll_values[1]
+
         win.blit(self.image, (self.rect.x, self.rect.y))
 
     def set_input(self, new_gate_input, gate_input_to_set):
@@ -53,10 +59,13 @@ class Buffer_Gate(Gate):
 
 
 class Inverted_Buffer_Gate(Gate):
-    def __init__(self, img_url, x, y, gate_input1):
+    def __init__(self, img_url, x, y, gate_input1=0):
         super().__init__(img_url, x, y, gate_input1)
 
     def get_output(self):
+        # TODO: fix this for all gates
+        if self.gate_input1:
+            return self.flip_input(self.gate_input1.value)
         return self.flip_input(self.gate_input1)
 
 
@@ -131,7 +140,7 @@ class XOR_Gate(Gate):
 
 
 class XNOR_Gate(Gate):
-    def __init__(self, img_url, x, y, gate_input1, gate_input2):
+    def __init__(self, img_url, x, y, gate_input1=0, gate_input2=0):
         super().__init__(img_url, x, y, gate_input1, gate_input2)
 
     def get_output(self):
