@@ -1,4 +1,4 @@
-import pygame
+import pygame, random
 from pygame.locals import *
 
 from gates import (
@@ -22,30 +22,35 @@ def main_game():
 
     # list of things that you can drag with your player
     connectables = []
-
     # we know all the gates work
     gates = []
     current_element = 0
-    # xnor_gate = XNOR_Gate("heart.png", 200, 200, True, True)
-    # xnor_gate = XNOR_Gate("heart.png", 200, 200)
-    # gates.append(xnor_gate)
     inverted_buffer_gate = Inverted_Buffer_Gate("heart.png", 200, 200)
     gates.append(inverted_buffer_gate)
 
     new_input = Gate_Input("true.png", 0, 0, True)
     connectables.append(new_input)
-    new_input2 = Gate_Input("false.png", 0, 32, False)
+    new_input2 = Gate_Input("false.png", 0, 400, False)
     connectables.append(new_input2)
 
     player = Player(50, 50)
     player_connected = False
 
     # dafluffypotato code
-    scroll = [1, 0]
+    scroll = [0, 0]
 
     running = True
     while running:
         current_gate = gates[current_element]
+
+        # collidelist is not letting me get the 0th element of the list
+        # SOLVED IT
+        # DO NOT USE 
+            # if player.rect.collidelist(connectables):
+        # USE INSTEAD
+            # if player.rect.collidelist(connectables) != -1:
+        # if player.rect.collidelist(connectables) != -1:
+        #     print(player.rect.collidelist(connectables), connectables[player.rect.collidelist(connectables)])
 
         # dafluffypotato code
         # to keep the player in the middle of the screen
@@ -68,30 +73,16 @@ def main_game():
 
                 # TODO: it is still a problem that if you try to put True on the gate first
                     # that it'll just throw both True and False on the gate input
+                # TODO: recreate the connecting to gate function for input
                 if event.key == K_SPACE:
-                    current_connected_input = player.rect.collidelist(connectables)
-                    # TODO: I think its not disconnecting because it is checking here if there
-                        # if connectables[current_connected_input].connected_to exists
-                        # that means if connectables[current_connected_input].connected_to != 0
-                        # I think it is set to 0 somewhere that isn't here
-                    if current_connected_input != -1:
-                        if connectables[current_connected_input].connected_to:
-                            connectables[current_connected_input].connected_to.gate_input1 = 0
-                            connectables[current_connected_input].connected_to = 0
-                        player_connected = True
-                    else:
-                        if player_connected:
-                            current_connected_gate = player.rect.collidelist(gates)
-                            if current_connected_gate != -1:
-                                # gates[current_connected_gate].gate_input1 = connectables[current_connected_input]
-                                # connectables[current_connected_input].connected_to = gates[current_connected_gate]
-                                current_connected_gate_input = player.rect.collidelist(gates[current_connected_gate].list_of_inputs)
-                                if current_connected_gate_input != -1:
-                                    print("current_connected_gate_input", current_connected_gate_input)
-                                    gates[current_connected_gate].list_of_inputs[current_connected_gate_input] = connectables[current_connected_input]
-                                    connectables[current_connected_input].connected_to = gates[current_connected_gate]
- 
+                    if player_connected:
                         player_connected = False
+                        connectables[current_connected_input].connected_to = 0
+                    else:
+                        current_connected_input = player.rect.collidelist(connectables)
+                        if current_connected_input != -1:
+                            player_connected = True
+                            connectables[current_connected_input].connected_to = player
 
         if keys[K_ESCAPE]:
             running = False
@@ -107,26 +98,13 @@ def main_game():
         # Update window =======================
         win.fill("White")
 
-        # TODO: fix how gate inputs are being connected to the gates
-            # when you connect one it's fine but when you click again
-            # the next input will automatically snap to the gate itself
-        # if player_connected:
-        #     connectables[connected_index].rect.midright = player.rect.midleft
-        if player_connected:
-            connectables[current_connected_input].rect.midright = player.rect.midleft
         # for gate in gates:
-        #     if gate.input1_connected and not player_connected:
-        #         connectables[connected_index].rect.midright = gates[curr_conn_gate].rect.midleft
-        #     if gate.input2_connected and not player_connected:
-        #         connectables[connected_index].rect.bottomright = gates[curr_conn_gate].rect.topleft
-        for gate in gates:
-            if gate.gate_input1:
-                gate.gate_input1.rect.midright = gate.rect.midleft
+        #     if gate.gate_input1:
+        #         gate.gate_input1.rect.midright = gate.rect.midleft
 
         # dafluffypotato code
         new_input.draw(win, scroll)
         new_input2.draw(win, scroll)
-        # xnor_gate.draw(win, scroll)
         inverted_buffer_gate.draw(win, scroll)
         player.draw(win, scroll)
         
